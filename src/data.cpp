@@ -94,6 +94,7 @@ void InternDataHandler::convert(
     const ParseResults& example,
     ParseResults& rslt) const {
 
+  rslt.originalId = example.originalId;
   rslt.weight = example.weight;
   rslt.LHSTokens.clear();
   rslt.RHSTokens.clear();

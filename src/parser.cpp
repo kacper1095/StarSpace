@@ -64,7 +64,10 @@ void DataParser::parseForDict(
     if (args_->normalizeText) {
       normalize_text(token);
     }
-    if (token.find("__weight__") == std::string::npos) {
+    if (
+      token.find("__weight__") == std::string::npos
+      && token.find("__id__") == std::string::npos
+    ){
       tokens.push_back(token);
     }
   }
@@ -120,6 +123,13 @@ bool DataParser::parse(
       }
       continue;
     }
+    std::size_t id_token_pos = token.find("__id__");
+    if (id_token_pos != std::string::npos) {
+      std::size_t id_token_size = 6; // for __id__
+      rslts.originalId = atoi(token.substr(id_token_size).c_str());
+      continue;
+    }
+
     string t = token;
     float weight = 1.0;
     if (args_->useWeight) {

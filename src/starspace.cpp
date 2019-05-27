@@ -385,6 +385,77 @@ void StarSpace::printDoc(ostream& ofs, const vector<Base>& tokens) {
   ofs << endl;
 }
 
+void StarSpace::predict() {
+  // check that it is not in trainMode 5
+  if (args_->trainMode == 5) {
+    std::cerr << "Test is undefined in trainMode 5. Please use other trainMode for testing.\n";
+    exit(EXIT_FAILURE);
+  }
+
+  // set dropout probability to 0 in test case
+  args_->dropoutLHS = 0.0;
+  args_->dropoutRHS = 0.0;
+
+  loadBaseDocs();
+  int N = testData_->getSize();
+  cout << "Samples to predict: " << N << endl;
+
+  auto numThreads = args_->thread;
+  vector<thread> threads;
+  vector<vector<Predictions>> predictions(N);
+  int numPerThread = ceil((float) N / numThreads);
+  assert(numPerThread > 0);
+
+  vector<ParseResults> examples;
+  testData_->getNextKExamples(N, examples);
+
+  auto predThread = [&] (int idx, int start, int end) {
+    for (int i = start; i < end; i++) {
+      predictOne(examples[i].LHSTokens, predictions[i]);
+    }
+  };
+
+  for (int i = 0; i < numThreads; i++) {
+    auto start = std::min(i * numPerThread, N);
+    auto end = std::min(start + numPerThread, N);
+    assert(end >= start);
+    threads.emplace_back(thread([=] {
+      predThread(i, start, end);
+    }));
+  }
+  for (auto& t : threads) t.join();
+
+  if (!args_->predictionFile.empty()) {
+    // print out prediction results to file
+    ofstream ofs(args_->predictionFile);
+    std::string symbol;
+    for (int i = 0; i < N; i++) {
+      ofs << examples[i].originalId << ",";
+      for (auto pred : predictions[i]) {
+        if (pred.second == 0) {
+          for (auto t : examples[i].RHSTokens) {
+            if (t.first < dict_->size()) {
+              symbol = dict_->getSymbol(t.first);
+            }
+          }
+        } else {
+          for (auto t : baseDocs_[pred.second - 1]) {
+            if (t.first < dict_->size()) {
+              symbol = dict_->getSymbol(t.first);
+            }
+          }
+        }
+        if (symbol[symbol.length() - 1] == '\n') {
+          symbol.erase(symbol.length() - 1);
+        }
+        ofs << symbol << ' ';
+      }
+      ofs << "\n";
+    }
+    ofs.close();
+  }
+}
+
 void StarSpace::evaluate() {
   // check that it is not in trainMode 5
   if (args_->trainMode == 5) {

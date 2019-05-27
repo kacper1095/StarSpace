@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     sp.train();
     sp.saveModel(args->model);
     sp.saveModelTsv(args->model + ".tsv");
-  } else {
+  } else if (!args->isPred) {
     if (boost::algorithm::ends_with(args->model, ".tsv")) {
       sp.initFromTsv(args->model);
     } else {
@@ -42,6 +42,15 @@ int main(int argc, char** argv) {
       args->printArgs();
     }
     sp.evaluate();
+  } else {
+    if (boost::algorithm::ends_with(args->model, ".tsv")) {
+      sp.initFromTsv(args->model);
+    } else {
+      sp.initFromSavedModel(args->model);
+      cout << "------Loaded model args:\n";
+      args->printArgs();
+    }
+    sp.predict();
   }
 
   return 0;

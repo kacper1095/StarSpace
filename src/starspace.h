@@ -29,6 +29,7 @@ class StarSpace {
 
     void train();
     void evaluate();
+    void predict();
 
     MatrixRow getNgramVector(const std::string& phrase);
     Matrix<Real> getDocVector(

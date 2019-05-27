@@ -58,6 +58,7 @@ class Args {
     bool debug;
     bool adagrad;
     bool isTrain;
+    bool isPred;
     bool normalizeText;
     bool saveEveryEpoch;
     bool saveTempModel;

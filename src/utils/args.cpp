@@ -51,6 +51,7 @@ Args::Args() {
   loss = "hinge";
   similarity = "cosine";
   isTrain = false;
+  isPred = false;
   shareEmb = true;
   saveEveryEpoch = false;
   saveTempModel = false;
@@ -77,6 +78,9 @@ void Args::parseArgs(int argc, char** argv) {
   if (strcmp(argv[1], "train") == 0) {
     isTrain = true;
   } else if (strcmp(argv[1], "test") == 0) {
+    isTrain = false;
+  }  else if (strcmp(argv[1], "pred") == 0) {
+    isPred = true;
     isTrain = false;
   } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0) {
     std::cerr << "Here is the help! Usage:" << std::endl;
