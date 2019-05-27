@@ -89,6 +89,36 @@ e.g.,
     
 The default weight is 1 for any word / label that does not contain weights. 
 
+## Predictions in `trainMode = 0` (forked)
+I extended the program to allow for clear predictions, eq. without any metrics, descriptions, just clear labels. I also needed matching `id` of a particular prediction with an appropriate example, since original implementation drops examples if both LHS or RHS are empty which can happen for out-of-vocabulary texts. To use this option, you need prepare the input in the following `fastText` format:
+```
+__id__<id> word_1 word_2 ... word_k __label__1 ... __label__r 
+```
+
+Weights are also possible to use, as in examples above this one. To further use the prediction method, run:
+
+```
+starspace pred -model <model_path> -testFile <test_file_path> [options]
+```
+Other options are the same as in `test` mode. 
+
+Running the script should result in the following output file:
+```
+<id>, __label__1 ... __label__r 
+```
+However, the script often returns predictions split into multiple lines, such as:
+```
+<id>, __label__1 __label__2
+ __label__3
+ .
+ .
+ .
+ __label__r
+```
+
+I do not know what is causing this behaviour but I suspect that the problem lays somewhere in the original input parser that holds the labels. Thus, it includes `\n` as a part of the label. Still, I think that parsing this is much easier to parse than the original `test` output format.
+
+
 # Compressed File
 
 StarSpace can also read from compressed file (currently only support gzip files). You can skip this part if you do not plan to use compressed input files. To run StarSpace with compressed input, first compile StarSpace using makefile_compress instead of makefile:
